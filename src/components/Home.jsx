@@ -20,9 +20,7 @@ function Home() {
 	console.log(totalMinted);
 
 	const getCount = useCallback(async () => {
-		console.log(contract);
 		const count = await contract.count();
-		console.log(parseInt(count));
 		setTotalMinted(parseInt(count));
 	}, []);
 
@@ -33,16 +31,18 @@ function Home() {
 	return (
 		<div>
 			<WalletBalance />
-			<div className="flex flex-wrap -mb-4">
-				{Array(4)
-					.fill(0)
-					.map((_, i) => (
-						// eslint-disable-next-line react/no-array-index-key
-						<div key={i} className="w-1/3 max-w-sm rounded shadow-lg">
-							<NFTImage tokenId={i} getCount={getCount} />
-						</div>
-					))}
-			</div>
+			<section className="pt-20 lg:pt-[120px] pb-10 lg:pb-20 bg-[#F3F4F6]">
+				<div className="container">
+					<div className="flex flex-wrap -mb-4">
+						{Array(4)
+							.fill(0)
+							.map((_, i) => (
+								// eslint-disable-next-line react/no-array-index-key
+								<NFTImage key={i} tokenId={i} getCount={getCount} />
+							))}
+					</div>
+				</div>
+			</section>
 		</div>
 	);
 }
@@ -85,18 +85,20 @@ function NFTImage({ tokenId, getCount }) {
 	};
 
 	return (
-		<div className="container max-w-full">
-			<img className="w-full" src={imageURI} alt="nft" />
-			<div className="px-6 py-4">
-				<h5 className="font-bold text-xl mb-2">ID #{tokenId}</h5>
-				{isMinted ? <h6>Token URI: {tokenURI}</h6> : null}
-				<button
-					type="button"
-					className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
-					onClick={mintToken}
-				>
-					Mint
-				</button>
+		<div className="w-full md:w-1/2 xl:w-1/3 px-4">
+			<div className="bg-white rounded-lg overflow-hidden mb-10">
+				<img className="w-full" src={imageURI} alt="nft" />
+				<div className="px-6 py-4">
+					<h5 className="font-bold text-xl mb-2">ID #{tokenId}</h5>
+					{isMinted ? <h6>Token URI: {tokenURI}</h6> : null}
+					<button
+						type="button"
+						className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
+						onClick={mintToken}
+					>
+						Mint
+					</button>
+				</div>
 			</div>
 		</div>
 	);

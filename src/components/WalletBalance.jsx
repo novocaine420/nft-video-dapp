@@ -1,20 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 
 function WalletBalance() {
 	const [balance, setBalance] = useState();
 
 	const getBalance = async () => {
-		const [account] = await window.ethereum.request({
-			method: 'eth_requestAccounts'
-		});
-		const provider = new ethers.providers.Web3Provider(window.ethereum);
-		const balance = await provider.getBalance(account);
-		setBalance(ethers.utils.formatEther(balance));
+		try {
+			const [account] = await window.ethereum.request({
+				method: 'eth_requestAccounts'
+			});
+			const provider = new ethers.providers.Web3Provider(window.ethereum);
+			const balance = await provider.getBalance(account);
+			setBalance(ethers.utils.formatEther(balance));
+		} catch (e) {
+			console.error(e);
+		}
 	};
 
+	useEffect(() => {
+		getBalance();
+	}, []);
+
 	return (
-		<div className="w-96 max-w-lg items-center justify-center overflow-hidden rounded-2xl bg-slate-200 shadow-xl">
+		<div className="items-center justify-center overflow-hidden rounded-2xl bg-slate-200 shadow-xl">
 			<div className="h-24 bg-white" />
 			<div className="-mt-20 flex justify-center">
 				<img
@@ -25,13 +33,6 @@ function WalletBalance() {
 			</div>
 			<div className="mt-5 mb-1 px-3 text-center text-lg">Your Name</div>
 			<div className="mb-5 px-3 text-center text-sky-500">Your Balance: {balance}</div>
-			<button
-				type="button"
-				className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
-				onClick={() => getBalance()}
-			>
-				Show My Balance
-			</button>
 		</div>
 	);
 }
