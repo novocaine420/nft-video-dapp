@@ -4,6 +4,8 @@ import { ethers } from 'ethers';
 
 import WalletBalance from './WalletBalance';
 import VideoNFT from '../artifacts/contracts/VideoNFT.sol/VideoNFT.json';
+import DropModal from './drop-modal/DropModal';
+import Button from './button/Button';
 
 const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
@@ -40,6 +42,13 @@ function Home() {
 								// eslint-disable-next-line react/no-array-index-key
 								<NFTImage key={i} tokenId={i} getCount={getCount} />
 							))}
+						<div className="w-full md:w-1/2 xl:w-1/3 px-4">
+							<div className="bg-white rounded-lg overflow-hidden mb-10">
+								<div className="px-6 py-4">
+									<DropModal />
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</section>
@@ -91,13 +100,10 @@ function NFTImage({ tokenId, getCount }) {
 				<div className="px-6 py-4">
 					<h5 className="font-bold text-xl mb-2">ID #{tokenId}</h5>
 					{isMinted ? <h6>Token URI: {tokenURI}</h6> : null}
-					<button
-						type="button"
-						className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
-						onClick={mintToken}
-					>
-						Mint
-					</button>
+					<div className="flex justify-between">
+						<Button title="Mint" onClick={mintToken} type="primary" />
+						<Button title="Transfer" onClick={mintToken} type="secondary" />
+					</div>
 				</div>
 			</div>
 		</div>

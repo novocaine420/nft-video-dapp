@@ -1,0 +1,8 @@
+.primary-button {
+	@apply py-4 px-10 lg:px-8 xl:px-10 inline-flex items-center justify-center text-center text-white text-base hover:bg-opacity-90 font-normal rounded-md;
+	background-color: #2f56d2;
+}
+
+.secondary-button {
+	@apply py-4 px-10 lg:px-8 xl:px-10 inline-flex items-center justify-center text-center text-base border rounded-md transition;
+}
