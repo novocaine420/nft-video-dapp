@@ -6,6 +6,7 @@ import WalletBalance from './WalletBalance';
 import VideoNFT from '../artifacts/contracts/VideoNFT.sol/VideoNFT.json';
 import DropModal from './drop-modal/DropModal';
 import Button from './button/Button';
+import { pinFileToIPFS, getPinList } from '../services/PinataService';
 
 const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
@@ -19,16 +20,34 @@ const contract = new ethers.Contract(contractAddress, VideoNFT.abi, signer);
 
 function Home() {
 	const [totalMinted, setTotalMinted] = useState(0);
-	console.log(totalMinted);
+	const [files, setFiles] = useState([]);
+	console.log(totalMinted, files);
 
 	const getCount = useCallback(async () => {
 		const count = await contract.count();
 		setTotalMinted(parseInt(count));
 	}, []);
 
+	const getFiles = async () => {
+		try {
+			const { count, rows } = await getPinList();
+			console.log(count);
+			setFiles(rows);
+		} catch (error) {
+			console.log('Error sending File to IPFS: ');
+			console.log(error);
+		}
+	};
+
 	useEffect(() => {
 		getCount();
+		getFiles();
 	}, [getCount]);
+
+	const onUpload = (files) => {
+		console.log(files);
+		pinFileToIPFS(files[0]);
+	};
 
 	return (
 		<div>
@@ -45,7 +64,7 @@ function Home() {
 						<div className="w-full md:w-1/2 xl:w-1/3 px-4">
 							<div className="bg-white rounded-lg overflow-hidden mb-10">
 								<div className="px-6 py-4">
-									<DropModal />
+									<DropModal onUpload={onUpload} />
 								</div>
 							</div>
 						</div>
@@ -70,7 +89,6 @@ function NFTImage({ tokenId, getCount }) {
 
 	const getMintedStatus = useCallback(async () => {
 		const result = await contract.isContentOwned(metadataURI);
-		console.log(result);
 		setIsMinted(result);
 		if (result) {
 			const uri = await getURI();

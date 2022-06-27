@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
-// import PropTypes from 'prop-types';
+import React, { useState, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { useDropzone } from 'react-dropzone';
 import Button from '../button/Button';
 import UploadIcon from '../../icons/UploadIcon.svg';
 import './DropModal.css';
 
-const DropModal = () => {
+const DropModal = ({ onUpload }) => {
 	const [showDropModal, setShowDropModal] = useState(false);
-	const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
+
+	const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+		maxFiles: 1
+	});
 
 	const files = acceptedFiles.map((file) => (
 		<li key={file.path}>
@@ -22,6 +25,11 @@ const DropModal = () => {
 	const closeModal = () => {
 		setShowDropModal(false);
 	};
+
+	const uploadFiles = useCallback(() => {
+		onUpload(acceptedFiles);
+		closeModal();
+	}, [onUpload, acceptedFiles]);
 
 	return (
 		<section className="container">
@@ -54,7 +62,7 @@ const DropModal = () => {
 							</aside>
 							<div className="w-full flex justify-between">
 								<Button title="Cancel" onClick={closeModal} type="secondary" />
-								<Button title="Upload" onClick={closeModal} type="primary" />
+								<Button title="Upload" onClick={uploadFiles} type="primary" />
 							</div>
 						</div>
 					</div>
@@ -64,6 +72,8 @@ const DropModal = () => {
 	);
 };
 
-DropModal.propTypes = {};
+DropModal.propTypes = {
+	onUpload: PropTypes.func
+};
 
 export default DropModal;
