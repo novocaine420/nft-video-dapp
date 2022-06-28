@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { ethers } from 'ethers';
+import axios from 'axios';
 
+import { ethers } from 'ethers';
 import WalletBalance from './WalletBalance';
 import VideoNFT from '../artifacts/contracts/VideoNFT.sol/VideoNFT.json';
 import DropModal from './drop-modal/DropModal';
 import Button from './button/Button';
-import { pinFileToIPFS, getPinList } from '../services/PinataService';
+import { getPinList } from '../services/PinataService';
 
 const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 
@@ -39,14 +40,39 @@ function Home() {
 		}
 	};
 
+	const sendRequest = async () => {
+		const res = await axios({
+			method: 'get',
+			url: 'http://localhost:4200/',
+			headers: {
+				'Access-Control-Allow-Origin': '*'
+			}
+		});
+
+		console.log(res);
+	};
+
 	useEffect(() => {
+		sendRequest();
 		getCount();
 		getFiles();
 	}, [getCount]);
 
-	const onUpload = (files) => {
-		console.log(files);
-		pinFileToIPFS(files[0]);
+	const onUpload = async (files) => {
+		const formData = new FormData();
+		console.log(files[0]);
+		formData.append('video', files[0]);
+
+		const resFile = await axios({
+			method: 'post',
+			url: 'http://localhost:4200/upload-video',
+			data: formData,
+			headers: {
+				'Content-Type': 'multipart/form-data'
+			}
+		});
+		console.log(resFile);
+		// pinFileToIPFS(files[0]);
 	};
 
 	return (
