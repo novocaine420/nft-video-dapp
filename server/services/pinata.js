@@ -4,13 +4,18 @@ const FormData = require('form-data');
 const form = new FormData();
 
 const url = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
-const apiKey = `${process.env.REACT_APP_PINATA_API_KEY}`;
-const apiSecret = `${process.env.REACT_APP_PINATA_API_SECRET}`;
+const apiKey = `${process.env.PINATA_API_KEY}`;
+const apiSecret = `${process.env.PINATA_API_SECRET}`;
 
-const pinFileToIPFS = async (stream, fileName) => {
+const pinFileToIPFS = async (stream, fileName, fileIPFS) => {
 	form.append('file', stream, {
 		filename: fileName // required or it fails
 	});
+	form.append('pinataOptions', '{"wrapWithDirectory": true}');
+	form.append(
+		'pinataMetadata',
+		`{"name": "${fileName}", "description": "Video Description", "keyvalues": {"fileURL": "${fileIPFS}"}}`
+	);
 
 	const config = {
 		method: 'post',

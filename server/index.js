@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 
 const { uploadFileToS3, getS3ObjectStream } = require('./services/s3');
-const { pinFileToIPFS, pinJsonToIPFS } = require('./services/pinata');
+const { pinFileToIPFS } = require('./services/pinata');
 
 const app = express();
 
@@ -24,15 +24,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-// start app
 const port = process.env.PORT || 4200;
-
-// Idiomatic expression in express to route and respond to a client request
-app.get('/', (req, res) => {
-	// get requests to the root ("/") will route here
-	res.send('Hello World!'); // server responds by sending the index.html file to the client's browser
-	// the .sendFile method needs the absolute path to the file, see: https:// expressjs.com/en/4x/api.html#res.sendFile
-});
 
 app.post('/upload-video', async (req, res) => {
 	try {
@@ -44,24 +36,23 @@ app.post('/upload-video', async (req, res) => {
 		} else {
 			// Use the name of the input field (i.e. "video") to retrieve the uploaded file
 			const { video } = req.files;
-			console.log('video', video);
+			console.log('File received', video);
 			// Use the mv() method to place the file in upload directory (i.e. "uploads")
-			console.log('uploadFileToS3');
+			console.log('Upload to S3...');
 			const data = await uploadFileToS3(video);
-			console.log('uploaded', data.Location);
+			console.log('File uploaded!', data.Location);
 			const s3Stream = await getS3ObjectStream(data);
-			console.log('pinFileToIPFS');
-			const { fileIPFS } = await pinFileToIPFS(s3Stream, data.Key);
-			console.log('pinned', fileIPFS);
-			console.log('pinJsonToIPFS');
-			const tokenURI = await pinJsonToIPFS(fileIPFS, data.Key, data.Location);
-			console.log('pinned json', tokenURI);
+			const fileURL = `${process.env.IMAGE_KIT_URL}/${data.Key}`;
+			console.log('Pin file to IPFS...');
+			const { fileIPFS } = await pinFileToIPFS(s3Stream, data.Key, fileURL);
+			console.log('Pinned!', fileIPFS);
 
 			// send response
 			res.send({
 				status: true,
-				message: 'File is uploaded',
+				message: 'File successfully uploaded!',
 				data: {
+					ipfs: fileIPFS,
 					name: video.name,
 					mimetype: video.mimetype,
 					size: video.size
