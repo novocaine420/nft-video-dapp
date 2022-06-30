@@ -43,7 +43,7 @@ const pinFileToIPFS = async (stream, fileName, fileIPFS) => {
 
 const pinJsonToIPFS = async (fileIPFS, fileName, fileURL) => {
 	const metadata = {
-		fileURL: fileIPFS,
+		video: fileIPFS,
 		name: `${fileName}.json`,
 		description: 'Video Description',
 		attributes: [{ fileURL }]
@@ -72,8 +72,7 @@ const pinJsonToIPFS = async (fileIPFS, fileName, fileURL) => {
 	);
 	const { data: jsonData = {} } = jsonResponse;
 	const { IpfsHash } = jsonData;
-	const tokenURI = `https://gateway.pinata.cloud/ipfs/${IpfsHash}`;
-	return tokenURI;
+	return `https://gateway.pinata.cloud/ipfs/${IpfsHash}`;
 };
 
 module.exports = { pinFileToIPFS, pinJsonToIPFS };

@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 
 const { uploadFileToS3, getS3ObjectStream } = require('./services/s3');
-const { pinFileToIPFS } = require('./services/pinata');
+const { pinFileToIPFS, pinJsonToIPFS } = require('./services/pinata');
 
 const app = express();
 
@@ -45,7 +45,10 @@ app.post('/upload-video', async (req, res) => {
 			const fileURL = `${process.env.IMAGE_KIT_URL}/${data.Key}`;
 			console.log('Pin file to IPFS...');
 			const { fileIPFS } = await pinFileToIPFS(s3Stream, data.Key, fileURL);
-			console.log('Pinned!', fileIPFS);
+			console.log('File pinned!', fileIPFS);
+			console.log('Pin JSON to IPFS...');
+			const tokenURI = await pinJsonToIPFS(fileIPFS, data.Key, fileURL);
+			console.log('JSON pinned!', tokenURI);
 
 			// send response
 			res.send({

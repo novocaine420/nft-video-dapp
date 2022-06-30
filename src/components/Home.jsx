@@ -30,11 +30,23 @@ function Home() {
 		setTotalMinted(parseInt(count));
 	}, []);
 
+	const groupNFTs = (list) => {
+		const res = [];
+		list.forEach((nft) => {
+			if (!nft.metadata.name.includes('.json')) {
+				const json = list.find((item) => item.metadata.name === `${nft.metadata.name}.json`);
+				res.push([nft, json]);
+			}
+		});
+		return res;
+	};
+
 	const getFiles = async () => {
 		try {
-			const { count, rows } = await getPinList();
-			console.log(`${count} files in total`);
-			setFiles(rows);
+			const { rows } = await getPinList();
+			const videos = rows.slice(0, files.length - 1);
+			console.log(`${videos.length} files in total`);
+			setFiles(groupNFTs(videos));
 		} catch (error) {
 			console.log('Error getting files from IPFS: ', error);
 		}
@@ -67,10 +79,10 @@ function Home() {
 			<section className="pt-20 lg:pt-[120px] pb-10 lg:pb-20 bg-[#F3F4F6]">
 				<div className="container">
 					<div className="flex flex-wrap -mb-4">
-						{files.slice(0, files.length - 1).map((file) => (
+						{files.map(([file, json]) => (
 							// eslint-disable-next-line react/no-array-index-key
 							<NFTVideo
-								contentId={file.ipfs_pin_hash}
+								contentId={json?.ipfs_pin_hash}
 								key={file.id}
 								tokenId={file.metadata.name}
 								getCount={getCount}
@@ -92,40 +104,39 @@ function Home() {
 }
 
 function NFTVideo({ contentId, tokenId, getCount, fileURL }) {
-	console.log(contentId, getCount, fileURL);
-	// const metadataURI = `${contentId}/${tokenId}.json`;
-	// // const videoURL = `https://gateway.pinata.cloud/ipfs/${contentId}/${tokenId}`;
-	//
-	// const [isMinted, setIsMinted] = useState(false);
-	// const [tokenURI, setTokenURI] = useState(false);
-	//
-	// const getURI = useCallback(() => {
-	// 	return contract.tokenURI(tokenId);
-	// }, [tokenId]);
-	//
-	// const getMintedStatus = useCallback(async () => {
-	// 	const result = await contract.isContentOwned(metadataURI);
-	// 	setIsMinted(result);
-	// 	if (result) {
-	// 		const uri = await getURI();
-	// 		setTokenURI(uri);
-	// 	}
-	// }, [metadataURI, getURI]);
-	//
-	// useEffect(() => {
-	// 	getMintedStatus();
-	// }, [getMintedStatus]);
-	// const mintToken = async () => {
-	// 	const connection = contract.connect(signer);
-	// 	const addr = connection.address;
-	//
-	// 	const result = await contract.payToMint(addr, metadataURI, {
-	// 		value: ethers.utils.parseEther('0.05')
-	// 	});
-	// 	await result.wait();
-	// 	getMintedStatus();
-	// 	getCount();
-	// };
+	const metadataURI = `${contentId}/${tokenId}.json`;
+	console.log('metadataURI', metadataURI);
+
+	const [isMinted, setIsMinted] = useState(false);
+	const [tokenURI, setTokenURI] = useState(false);
+
+	const getURI = useCallback(() => {
+		return contract.tokenURI(tokenId);
+	}, [tokenId]);
+
+	const getMintedStatus = useCallback(async () => {
+		const result = await contract.isContentOwned(metadataURI);
+		setIsMinted(result);
+		if (result) {
+			const uri = await getURI();
+			setTokenURI(uri);
+		}
+	}, [metadataURI, getURI]);
+
+	useEffect(() => {
+		getMintedStatus();
+	}, [getMintedStatus]);
+	const mintToken = async () => {
+		const connection = contract.connect(signer);
+		const addr = connection.address;
+
+		const result = await contract.payToMint(addr, metadataURI, {
+			value: ethers.utils.parseEther('0.05')
+		});
+		await result.wait();
+		getMintedStatus();
+		getCount();
+	};
 
 	return (
 		<div className="w-full md:w-1/2 xl:w-1/3 px-4">
@@ -133,11 +144,10 @@ function NFTVideo({ contentId, tokenId, getCount, fileURL }) {
 				<VideoPlayer fileURL={fileURL} />
 				<div className="px-6 py-4">
 					<h5 className="font-bold text-xl mb-2">ID #{tokenId}</h5>
-					{/* {isMinted ? <h6>Token URI: {tokenURI}</h6> : null} */}
-					{/* <div className="flex justify-between"> */}
-					{/* 	<Button title="Mint" onClick={mintToken} type="primary" /> */}
-					{/* 	<Button title="Transfer" onClick={mintToken} type="secondary" /> */}
-					{/* </div> */}
+					{isMinted ? <h6>Token URI: {tokenURI}</h6> : null}
+					<div className="flex justify-between">
+						<Button title="Mint" onClick={mintToken} type="primary" />
+					</div>
 				</div>
 			</div>
 		</div>
