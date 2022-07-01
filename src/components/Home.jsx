@@ -9,6 +9,7 @@ import Button from './button/Button';
 import { getPinList } from '../services/PinataService';
 import VideoPlayer from './video-player/VideoPlayer';
 import { getJsonName } from '../helpers';
+import Spinner from './spinner/Spinner';
 
 const contractAddress = '0xF6c909c37A43Ac48ab6Ca9E5DBF92c61364DED76';
 
@@ -21,6 +22,7 @@ const signer = provider.getSigner();
 const contract = new ethers.Contract(contractAddress, VideoNFT.abi, signer);
 
 function Home() {
+	const [isLoading, setIsLoading] = useState(false);
 	const [files, setFiles] = useState([]);
 
 	const groupNFTs = (list) => {
@@ -41,12 +43,14 @@ function Home() {
 
 	const getFiles = async () => {
 		try {
+			setIsLoading(true);
 			const { rows } = await getPinList();
 			const videos = rows.slice(0, files.length - 1);
-			console.log(`${videos.length} files in total`);
 			setFiles(groupNFTs(videos));
 		} catch (error) {
 			console.error('Error getting files from IPFS: ', error);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -77,19 +81,23 @@ function Home() {
 		<div className="flex flex-col h-screen">
 			<WalletBalance onUpload={onUpload} />
 			<section className="pt-20 lg:pt-[32px] pb-10 lg:pb-20 bg-[#F3F4F6] flex flex-grow">
-				<div className="container">
-					<div className="flex flex-wrap -mb-4">
-						{files.map(([file, json], i) => (
-							<NFTVideo
-								key={file.id}
-								contentId={json?.ipfs_pin_hash}
-								tokenId={i}
-								fileName={file?.metadata.name}
-								jsonName={getJsonName(json?.metadata.name)}
-								fileURL={file.metadata.keyvalues.fileURL}
-							/>
-						))}
-					</div>
+				<div className="container mx-auto">
+					{isLoading ? (
+						<Spinner />
+					) : (
+						<div className="flex flex-wrap -mb-4">
+							{files.map(([file, json], i) => (
+								<NFTVideo
+									key={file.id}
+									contentId={json?.ipfs_pin_hash}
+									tokenId={i}
+									fileName={file?.metadata.name}
+									jsonName={getJsonName(json?.metadata.name)}
+									fileURL={file.metadata.keyvalues.fileURL}
+								/>
+							))}
+						</div>
+					)}
 				</div>
 			</section>
 		</div>
@@ -122,12 +130,10 @@ function NFTVideo({ contentId, tokenId, fileURL, jsonName, fileName }) {
 	const mintToken = async () => {
 		try {
 			const connection = contract.connect(signer);
-			const addr = connection.address;
-			console.log('addr', addr);
-			const result = await contract.payToMint(addr, metadataURI, {
+			const { address } = connection;
+			const result = await contract.payToMint(address, metadataURI, {
 				value: ethers.utils.parseEther('0.05')
 			});
-			console.log('result', result);
 			await result.wait();
 			getMintedStatus();
 		} catch (err) {

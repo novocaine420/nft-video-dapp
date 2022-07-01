@@ -54,6 +54,7 @@ module.exports = {
 		'react/jsx-filename-extension': 'warn',
 		'react/jsx-props-no-spreading': 'off',
 		'react/function-component-definition': 'off',
+		'import/prefer-default-export': 'off',
 
 		// By Airbnb default, it also has 'ForOfStatement', we dont want that
 		'no-restricted-syntax': ['error', 'ForInStatement', 'LabeledStatement', 'WithStatement'],
