@@ -7,9 +7,9 @@ const classes = {
 	secondary: 'secondary-button'
 };
 
-const Button = ({ title, onClick, type }) => {
+const Button = ({ title, onClick, type, classNames = '' }) => {
 	return (
-		<button type="button" className={classes[type]} onClick={onClick}>
+		<button type="button" className={`${classes[type]} ${classNames}`} onClick={onClick}>
 			{title}
 		</button>
 	);
@@ -18,7 +18,8 @@ const Button = ({ title, onClick, type }) => {
 Button.propTypes = {
 	title: PropTypes.string,
 	onClick: PropTypes.func,
-	type: PropTypes.string
+	type: PropTypes.string,
+	classNames: PropTypes.string
 };
 
 export default Button;

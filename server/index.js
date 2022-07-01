@@ -4,6 +4,7 @@ const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const { getJsonFullName } = require('./helpers');
 
 const { uploadFileToS3, getS3ObjectStream } = require('./services/s3');
 const { pinFileToIPFS, pinJsonToIPFS } = require('./services/pinata');
@@ -46,8 +47,9 @@ app.post('/upload-video', async (req, res) => {
 			console.log('Pin file to IPFS...');
 			const { fileIPFS } = await pinFileToIPFS(s3Stream, data.Key, fileURL);
 			console.log('File pinned!', fileIPFS);
+			const jsonFileName = getJsonFullName(data.Key);
 			console.log('Pin JSON to IPFS...');
-			const tokenURI = await pinJsonToIPFS(fileIPFS, data.Key, fileURL);
+			const tokenURI = await pinJsonToIPFS(fileIPFS, jsonFileName, fileURL);
 			console.log('JSON pinned!', tokenURI);
 
 			// send response

@@ -51,7 +51,7 @@ const pinJsonToIPFS = async (fileIPFS, fileName, fileURL) => {
 
 	const pinataJSONBody = JSON.stringify({
 		pinataMetadata: {
-			name: `${fileName}.json`,
+			name: fileName,
 			keyvalues: {
 				fileURL: fileIPFS
 			}

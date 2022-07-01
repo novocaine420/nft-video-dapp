@@ -1,6 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const AWS = require('aws-sdk');
+const { getFileName } = require('../helpers');
 
 const s3AccessKeyId = `${process.env.AWS_ACCESS_KEY_ID}`;
 const s3AccessSecret = `${process.env.AWS_SECRET_ACCESS_KEY}`;
@@ -21,7 +22,8 @@ const uploadFileToS3 = async (file) => {
 		console.log('Create Read Stream Error', err);
 	});
 
-	const uploadParams = { Bucket: s3Bucket, Key: file.name, Body: fileStream };
+	const fileName = getFileName(file.name);
+	const uploadParams = { Bucket: s3Bucket, Key: fileName, Body: fileStream };
 
 	return s3
 		.upload(uploadParams, (err, data) => {
