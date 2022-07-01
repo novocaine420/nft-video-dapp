@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import DropModal from './drop-modal/DropModal';
 
 function WalletBalance({ onUpload }) {
+	const [accountId, setAccountId] = useState();
 	const [balance, setBalance] = useState();
 
 	const getBalance = async () => {
@@ -11,6 +12,7 @@ function WalletBalance({ onUpload }) {
 			const [account] = await window.ethereum.request({
 				method: 'eth_requestAccounts'
 			});
+			setAccountId(account);
 			const provider = new ethers.providers.Web3Provider(window.ethereum);
 			const balance = await provider.getBalance(account);
 			setBalance(ethers.utils.formatEther(balance));
@@ -33,7 +35,7 @@ function WalletBalance({ onUpload }) {
 					alt="user-logo"
 				/>
 			</div>
-			<div className="mt-5 mb-1 px-3 text-center text-lg">Your Name</div>
+			<div className="mt-5 mb-1 px-3 text-center text-lg">Account ID: {accountId}</div>
 			<div className="mb-5 px-3 text-center text-sky-500">Your Balance: {balance}</div>
 			<DropModal onUpload={onUpload} />
 		</div>

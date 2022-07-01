@@ -20,5 +20,13 @@ module.exports = {
 	solidity: '0.8.4',
 	paths: {
 		artifacts: './src/artifacts'
+	},
+	networks: {
+		rinkeby: {
+			url: '', // ALCHEMY APP URL
+			accounts: [
+				// put here list of allowed accounts
+			]
+		}
 	}
 };
