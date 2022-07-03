@@ -26,7 +26,7 @@ function WalletBalance({ onUpload }) {
 	}, []);
 
 	return (
-		<div className="items-center justify-center overflow-hidden rounded-2xl bg-slate-200 shadow-xl relative">
+		<div className="items-center justify-center rounded-2xl bg-slate-200 shadow-xl relative">
 			<div className="h-24 bg-white" />
 			<div className="-mt-20 flex justify-center">
 				<img

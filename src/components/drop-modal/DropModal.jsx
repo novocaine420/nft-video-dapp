@@ -62,7 +62,11 @@ const DropModal = ({ onUpload }) => {
 							</aside>
 							<div className="w-full flex justify-between">
 								<Button title="Cancel" onClick={closeModal} type="secondary" />
-								<Button title="Upload" onClick={uploadFiles} type="primary" />
+								<Button
+									title="Upload"
+									onClick={uploadFiles}
+									disabled={acceptedFiles.length === 0}
+								/>
 							</div>
 						</div>
 					</div>

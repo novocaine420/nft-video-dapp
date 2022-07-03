@@ -4,12 +4,18 @@ import './Button.css';
 
 const classes = {
 	primary: 'primary-button',
-	secondary: 'secondary-button'
+	secondary: 'secondary-button',
+	disabled: 'disabled'
 };
 
-const Button = ({ title, onClick, type, classNames = '' }) => {
+const Button = ({ title, onClick, type = 'primary', classNames = '', disabled }) => {
 	return (
-		<button type="button" className={`${classes[type]} ${classNames}`} onClick={onClick}>
+		<button
+			type="button"
+			className={`${classes[disabled ? 'disabled' : type]} ${classNames}`}
+			onClick={onClick}
+			disabled={disabled}
+		>
 			{title}
 		</button>
 	);
@@ -19,7 +25,8 @@ Button.propTypes = {
 	title: PropTypes.string,
 	onClick: PropTypes.func,
 	type: PropTypes.string,
-	classNames: PropTypes.string
+	classNames: PropTypes.string,
+	disabled: PropTypes.bool
 };
 
 export default Button;

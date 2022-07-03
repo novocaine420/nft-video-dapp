@@ -45,8 +45,7 @@ function Home() {
 		try {
 			setIsLoading(true);
 			const { rows } = await getPinList();
-			const videos = rows.slice(0, files.length - 1);
-			setFiles(groupNFTs(videos));
+			setFiles(groupNFTs(rows));
 		} catch (error) {
 			console.error('Error getting files from IPFS: ', error);
 		} finally {
@@ -88,12 +87,12 @@ function Home() {
 						<div className="flex flex-wrap -mb-4">
 							{files.map(([file, json], i) => (
 								<NFTVideo
-									key={file.id}
+									key={file?.id}
 									contentId={json?.ipfs_pin_hash}
 									tokenId={i}
 									fileName={file?.metadata.name}
 									jsonName={getJsonName(json?.metadata.name)}
-									fileURL={file.metadata.keyvalues.fileURL}
+									fileURL={file?.metadata.keyvalues.fileURL}
 								/>
 							))}
 						</div>
