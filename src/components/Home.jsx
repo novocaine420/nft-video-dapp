@@ -1,14 +1,17 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { ethers } from 'ethers';
+import axios from 'axios';
 
+import { ethers } from 'ethers';
 import WalletBalance from './WalletBalance';
 import VideoNFT from '../artifacts/contracts/VideoNFT.sol/VideoNFT.json';
-import DropModal from './drop-modal/DropModal';
 import Button from './button/Button';
-import { pinFileToIPFS, getPinList } from '../services/PinataService';
+import { getPinList } from '../services/PinataService';
+import VideoPlayer from './video-player/VideoPlayer';
+import { getJsonName } from '../helpers';
+import Spinner from './spinner/Spinner';
 
-const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+const contractAddress = '0xF6c909c37A43Ac48ab6Ca9E5DBF92c61364DED76';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 
@@ -19,108 +22,137 @@ const signer = provider.getSigner();
 const contract = new ethers.Contract(contractAddress, VideoNFT.abi, signer);
 
 function Home() {
-	const [totalMinted, setTotalMinted] = useState(0);
+	const [isLoading, setIsLoading] = useState(false);
 	const [files, setFiles] = useState([]);
-	console.log(totalMinted, files);
 
-	const getCount = useCallback(async () => {
-		const count = await contract.count();
-		setTotalMinted(parseInt(count));
-	}, []);
+	const groupNFTs = (list) => {
+		const res = [];
+		list.forEach((item) => {
+			const fileName = item.metadata.name;
+			if (fileName.includes('.json')) {
+				const jsonName = fileName.split('.')[0];
+				const file = list.find((item2) => {
+					const itemName = item2.metadata.name;
+					return itemName.includes(jsonName) && !itemName.includes('.json');
+				});
+				res.push([file, item]);
+			}
+		});
+		return res.reverse();
+	};
 
 	const getFiles = async () => {
 		try {
-			const { count, rows } = await getPinList();
-			console.log(count);
-			setFiles(rows);
+			setIsLoading(true);
+			const { rows } = await getPinList();
+			setFiles(groupNFTs(rows));
 		} catch (error) {
-			console.log('Error sending File to IPFS: ');
-			console.log(error);
+			console.error('Error getting files from IPFS: ', error);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
 	useEffect(() => {
-		getCount();
 		getFiles();
-	}, [getCount]);
+	}, []);
 
-	const onUpload = (files) => {
-		console.log(files);
-		pinFileToIPFS(files[0]);
+	const onUpload = async (files) => {
+		try {
+			const formData = new FormData();
+			formData.append('video', files[0]);
+
+			await axios({
+				method: 'post',
+				url: `${process.env.REACT_APP_API_URL}/upload-video`,
+				data: formData,
+				headers: {
+					'Content-Type': 'multipart/form-data'
+				}
+			});
+			await getFiles();
+		} catch (error) {
+			console.error(error);
+		}
 	};
 
 	return (
-		<div>
-			<WalletBalance />
-			<section className="pt-20 lg:pt-[120px] pb-10 lg:pb-20 bg-[#F3F4F6]">
-				<div className="container">
-					<div className="flex flex-wrap -mb-4">
-						{Array(4)
-							.fill(0)
-							.map((_, i) => (
-								// eslint-disable-next-line react/no-array-index-key
-								<NFTImage key={i} tokenId={i} getCount={getCount} />
+		<div className="flex flex-col h-screen">
+			<WalletBalance onUpload={onUpload} />
+			<section className="pt-20 lg:pt-[32px] pb-10 lg:pb-20 bg-[#F3F4F6] flex flex-grow">
+				<div className="container mx-auto">
+					{isLoading ? (
+						<Spinner />
+					) : (
+						<div className="flex flex-wrap -mb-4">
+							{files.map(([file, json], i) => (
+								<NFTVideo
+									key={file?.id}
+									contentId={json?.ipfs_pin_hash}
+									tokenId={i}
+									fileName={file?.metadata.name}
+									jsonName={getJsonName(json?.metadata.name)}
+									fileURL={file?.metadata.keyvalues.fileURL}
+								/>
 							))}
-						<div className="w-full md:w-1/2 xl:w-1/3 px-4">
-							<div className="bg-white rounded-lg overflow-hidden mb-10">
-								<div className="px-6 py-4">
-									<DropModal onUpload={onUpload} />
-								</div>
-							</div>
 						</div>
-					</div>
+					)}
 				</div>
 			</section>
 		</div>
 	);
 }
 
-function NFTImage({ tokenId, getCount }) {
-	const contentId = 'QmPXCmjeM97GnczPXAAFQBEWissF4bZ6ciWJpvvjDYajQN';
-	const metadataURI = `${contentId}/${tokenId}.json`;
-	const imageURI = `https://gateway.pinata.cloud/ipfs/${contentId}/${tokenId}.svg`;
+function NFTVideo({ contentId, tokenId, fileURL, jsonName, fileName }) {
+	const metadataURI = `${contentId}/${jsonName}.json`;
 
 	const [isMinted, setIsMinted] = useState(false);
-	const [tokenURI, setTokenURI] = useState(false);
 
-	const getURI = useCallback(() => {
-		return contract.tokenURI(tokenId);
+	const getURI = useCallback(async () => {
+		const uri = await contract.tokenURI(tokenId);
+		alert(uri);
 	}, [tokenId]);
 
 	const getMintedStatus = useCallback(async () => {
-		const result = await contract.isContentOwned(metadataURI);
-		setIsMinted(result);
-		if (result) {
-			const uri = await getURI();
-			setTokenURI(uri);
+		try {
+			const result = await contract.isContentOwned(metadataURI);
+			setIsMinted(result);
+		} catch (err) {
+			console.error(err);
 		}
-	}, [metadataURI, getURI]);
+	}, [metadataURI]);
 
 	useEffect(() => {
 		getMintedStatus();
 	}, [getMintedStatus]);
-	const mintToken = async () => {
-		const connection = contract.connect(signer);
-		const addr = connection.address;
 
-		const result = await contract.payToMint(addr, metadataURI, {
-			value: ethers.utils.parseEther('0.05')
-		});
-		await result.wait();
-		getMintedStatus();
-		getCount();
+	const mintToken = async () => {
+		try {
+			const connection = contract.connect(signer);
+			const { address } = connection;
+			const result = await contract.payToMint(address, metadataURI, {
+				value: ethers.utils.parseEther('0.05')
+			});
+			await result.wait();
+			getMintedStatus();
+		} catch (err) {
+			console.error(err);
+		}
 	};
 
 	return (
 		<div className="w-full md:w-1/2 xl:w-1/3 px-4">
 			<div className="bg-white rounded-lg overflow-hidden mb-10">
-				<img className="w-full" src={imageURI} alt="nft" />
+				<VideoPlayer fileURL={fileURL} disabled={!isMinted} />
 				<div className="px-6 py-4">
-					<h5 className="font-bold text-xl mb-2">ID #{tokenId}</h5>
-					{isMinted ? <h6>Token URI: {tokenURI}</h6> : null}
-					<div className="flex justify-between">
-						<Button title="Mint" onClick={mintToken} type="primary" />
-						<Button title="Transfer" onClick={mintToken} type="secondary" />
+					<h5 className="font-bold text-xl mb-2">Token ID: #{tokenId}</h5>
+					<h5 className="font-medium leading-tight text-xl mt-0 mb-2 text-slate-400">{fileName}</h5>
+					<div className="flex justify-between mt-5 mb-5">
+						{!isMinted ? (
+							<Button title="Mint" onClick={mintToken} type="primary" />
+						) : (
+							<Button title="Taken! Show URI" onClick={getURI} type="secondary" />
+						)}
 					</div>
 				</div>
 			</div>
@@ -128,9 +160,12 @@ function NFTImage({ tokenId, getCount }) {
 	);
 }
 
-NFTImage.propTypes = {
+NFTVideo.propTypes = {
+	contentId: PropTypes.string,
 	tokenId: PropTypes.number,
-	getCount: PropTypes.func
+	fileURL: PropTypes.string,
+	jsonName: PropTypes.string,
+	fileName: PropTypes.string
 };
 
 export default Home;

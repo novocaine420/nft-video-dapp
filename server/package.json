@@ -1,0 +1,33 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "novocaine420",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.118.1",
+    "aws-sdk": "^2.1162.0",
+    "axios": "^0.27.2",
+    "base-path-converter": "^1.0.2",
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-fileupload": "^1.4.0",
+    "form-data": "^4.0.0",
+    "formidable": "^2.0.1",
+    "got": "^12.1.0",
+    "lodash": "^4.17.21",
+    "morgan": "^1.10.0",
+    "recursive-fs": "^2.1.0",
+    "uniqid": "^5.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.18"
+  }
+}

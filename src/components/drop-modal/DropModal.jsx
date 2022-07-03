@@ -32,12 +32,12 @@ const DropModal = ({ onUpload }) => {
 	}, [onUpload, acceptedFiles]);
 
 	return (
-		<section className="container">
-			<div className="container py-20">
-				<Button title="Open Modal" onClick={openModal} type="primary" />
+		<section className="absolute bottom-10 right-10">
+			<div className="container">
+				<Button title="Create an Idea" onClick={openModal} type="primary" />
 			</div>
 			{showDropModal && (
-				<div className="modal-wrapper">
+				<div className="modal-wrapper z-10">
 					<div className="modal">
 						<div className="flex flex-wrap -mx-3">
 							<div {...getRootProps({ className: 'dropzone' })}>
@@ -62,7 +62,11 @@ const DropModal = ({ onUpload }) => {
 							</aside>
 							<div className="w-full flex justify-between">
 								<Button title="Cancel" onClick={closeModal} type="secondary" />
-								<Button title="Upload" onClick={uploadFiles} type="primary" />
+								<Button
+									title="Upload"
+									onClick={uploadFiles}
+									disabled={acceptedFiles.length === 0}
+								/>
 							</div>
 						</div>
 					</div>
