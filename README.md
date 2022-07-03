@@ -1,3 +1,37 @@
+# Getting Started
+1. Install NodeJS, preferably using NVM or similar version manager.
+2. Create your configuration files:
+   - Create `.env` file in root directory and paste all needed variables there;
+   - Create `.env` file in `/server` directory and paste all needed variables there;
+3. Install project's dependencies:
+    ### `npm install`
+
+### Now you need to create application in [Alchemy](https://www.alchemy.com/) to deploy your smart contract to Rinkeby test network:
+1. Login to [Alchemy](https://www.alchemy.com);
+2. Create a new application there;
+3. You will receive an HTTP url, copy it;
+4. Copy your Metamask account ID,
+5. Paste those variables in `hardhat.config.js` as so:
+`
+   { ...
+   networks: {
+   rinkeby: {
+   url: '<YOUR_ALCHEMY_APP_URL>'
+   accounts: [<MEMASK_ACCOUNT_ID>]
+   }
+   }
+   ... }
+`
+6. Run following command to deploy your contract to Rinkeby test network:
+   ###`npm run deploy-rinkeby`
+### Now you can run the application:
+
+1. Go to `/server` in your terminal and run to start the server:
+   ### `npm run start`
+2. Open new terminal window in project root location and run to start application:
+   ### `npm run start`
+3. App successfully launched.
+   
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
